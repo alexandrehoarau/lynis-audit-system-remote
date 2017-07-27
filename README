@@ -1,0 +1,7 @@
+## Synopsis
+
+This project aim to provide tool that able to audit remote server inside BSC and give somes suggestions and warnings corcerning configuration security vulnerabilities using lynis tool.
+
+##Usage script
+
+Usage: ./lynis-remote-host <lynis-version> <username> <hostname> <password>"
