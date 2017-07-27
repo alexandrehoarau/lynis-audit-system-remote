@@ -1,11 +1,16 @@
 #!/bin/bash
+#=============================================================
+#
 #Version : 2.0
 #Usage : ./lynis-remote-audit.sh
 #Description : Script to launch lynis audit to a remote server
 #Author : Alexandre HOARAU
+#Company : BSC
+#=============================================================
 
 #Retrieve version and connection information
 
+timestamp=$(date +%Y%m%d)
 
 echo "Please enter lynis version, followed by [ENTER]:"
 read version
@@ -31,59 +36,20 @@ sshpass -f $pass_file scp lynis-remote.tar.gz $username@$hostname:~/tmp-lynis-re
 
 sshpass -f $pass_file ssh $username@$hostname "mkdir -p ~/tmp-lynis && cd ~/tmp-lynis && tar xzf ../tmp-lynis-remote.tgz && rm ../tmp-lynis-remote.tgz && cd lynis && ./lynis audit system"
 
-##expect -c "
-#   set timeout -1
-#   spawn ssh $username@$hostname $audit_cmd
-#   expect *assword:  { send $password\r ; exp_continue }
-#   exit
-#"
-
-#Retrieve log and lynis reports
-
-timestamp=$(date +%Y%m%d)
+#Create specific folder to store host log and reports
 
 mkdir -p ~/lynis-logs/$hostname
 
-##expect -c "  
-#   set timeout 1
-#   spawn scp $username@$hostname:/tmp/lynis.log ~/lynis-logs/$hostname/$timestamp-lynis.log
-#   expect yes/no { send yes\r ; exp_continue }
-#   expect *assword: { send $password\r }
-#   expect 100%
-#   sleep 1
-#   exit
-#"
+#Retrieve lynis log and report
 
 sshpass -f $pass_file scp $username@$hostname:/tmp/lynis.log ~/lynis-logs/$hostname/$timestamp-lynis.log
-#expect -c "  
-#   set timeout 1
-#   spawn scp $username@$hostname:/tmp/lynis-report.dat ~/lynis-logs/$hostname/$timestamp-lynis-report.dat
-#   expect yes/no { send yes\r ; exp_continue }
-#   expect *assword: { send $password\r }
-#   expect 100%
-#   sleep 1
-#   exit
-#"
 
 sshpass -f $pass_file scp $username@$hostname:/tmp/lynis-report.dat ~/lynis-logs/$hostname/$timestamp-lynis-report.dat
-#
-##Remove temp directory
-#expect -c "
-#   set timeout -1
-#   spawn ssh $username@$hostname rm -rf ~/tmp-lynis
-#   expect *assword:  { send $password\r ; exp_continue }
-#   exit
-#"
-#
+
+#Remove temporary folders on remote host
+
 sshpass -f $pass_file ssh $username@$hostname rm -rf ~/tmp-lynis
 
-##Clean up tmp files (when using non-privileged account)
-#
-#expect -c "
-#   set timeout -1
-#   spawn ssh $username@$hostname rm /tmp/lynis.log /tmp/lynis-report.dat
-#   expect *assword:  { send $password\r ; exp_continue }
-#   exit
-#"
+#Clean up tmp files (when using non-privileged account)
 
 sshpass -f $pass_file ssh $username@$hostname rm /tmp/lynis.log /tmp/lynis-report.dat
